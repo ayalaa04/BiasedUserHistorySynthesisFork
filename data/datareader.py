@@ -82,7 +82,7 @@ def read_movielens(datasets_dir=None):
             title = movie_info[1][:-6].strip()
             date = int(movie_info[1][-6:][1:-1])
             genres = list(map(lambda genre : GENRE_ID[genre], movie_info[-1].strip().split('|')))
-            one_hot = np.zeros((len(GENRE_ID),), dtype=np.float)
+            one_hot = np.zeros((len(GENRE_ID),), dtype=float)
             one_hot[genres] = 1
 
             movie_data[movie_id] = {}

@@ -54,7 +54,7 @@ class InteractionGraph:
         self.adj_matrix = self.adj_matrix.tocsr()
     
     def compute_tail_distribution(self, warm_threshold):
-        self.is_cold = np.zeros((self.adj_matrix.shape[0]), dtype=np.bool)
+        self.is_cold = np.zeros((self.adj_matrix.shape[0]), dtype=bool)
         self.start_item_id = len(self.user_data)
 
         self.user_degrees = np.array(self.adj_matrix[:self.start_item_id].sum(axis=1)).flatten()

@@ -10,6 +10,15 @@ import os
 
 
 #region MovieLens ---------------------------
+''' 
+    This custom MovieLens class is used to call DataLoader.
+    __init__ gets the user and item data from the file
+    __len__ returns the length of the data
+    __getitem__ returns the item, for indexing purposes 
+
+    igraph --> used for data visualization 
+    .edges represents the igraph interaction between the user and the item, in our case, edges represents the user's rating of the movie
+'''
 class MovieLensDataset(Dataset):
     def __init__(self, igraph : MovielensInteractionGraph, mode='train') -> None:
         self.igraph = igraph
@@ -30,6 +39,12 @@ class MovieLensDataset(Dataset):
     def __getitem__(self, index):
         return self.edges[index]
 
+
+''' 
+    The class is used to load batches of the data. It inherits the igraph.
+    igraph contains user, item, matrix
+
+'''
 class MovieLensCollator:
     def __init__(self, igraph: MovielensInteractionGraph, mode: str, num_neg_samples=1) -> None:
         self.igraph = igraph
@@ -40,9 +55,10 @@ class MovieLensCollator:
         self.mode = mode
         self.rng = np.random.Generator(np.random.PCG64(seed=0))
 
+# generate random samples based on what the user has not intereacted with
     def _generate_in_and_oob_negatives(self, positive_edges):
         item_start_id = len(self.user_data)
-        pos_edges = np.array(positive_edges)
+        pos_edges = np.array(positive_edges)    # what the user has interacted with
 
         negative_edges = []
         for i, (user_id, _) in enumerate(positive_edges):
