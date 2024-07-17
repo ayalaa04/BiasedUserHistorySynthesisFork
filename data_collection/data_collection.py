@@ -89,5 +89,5 @@ while len(user_data) < num_users and friends_data:
 
     # Save to CSV --> user_info.csv is the final csv
     df_user = pd.DataFrame(final_user_data)
-    df_user.to_csv('user_info.csv', index=False)
+    df_user.to_csv('data_collection/DATASET/user_info.csv', index=False)
     print(df_user)
