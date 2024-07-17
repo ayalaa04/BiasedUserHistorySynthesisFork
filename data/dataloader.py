@@ -63,7 +63,7 @@ class MovieLensCollator:
         negative_edges = []
         for i, (user_id, _) in enumerate(positive_edges):
 
-            # Out of batch negative Sampling
+            # Out of batch negative Sampling, this is the probabilities of the potential candidates (items the user hasn't interacted with)
             candidate_item_probs = np.asarray(self.adj_matrix[user_id, item_start_id:].todense()).flatten() == 0
             candidate_item_probs = candidate_item_probs / candidate_item_probs.sum()
 
