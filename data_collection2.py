@@ -60,7 +60,7 @@ def fetch_friends_info(username, seen_users, limit=200):
 initial_username = 'RJ'  # Initial user to start fetching data
 user_data = []
 seen_users = set()
-num_users = 1000        # Change this value to modify the number of users fetched
+num_users = 1000       # Change this value to modify the number of users fetched
 
     # Fetch initial user's info
 initial_user_info = get_user_info(initial_username)
