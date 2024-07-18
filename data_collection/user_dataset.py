@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import random
 import string
+
 # Define API credentials and parameters
 API_KEY = 'e4cf224336ce2a202bd885e2a29c3e6d'
 # Fetch the user info using our API key
@@ -12,6 +13,7 @@ def get_user_info(username):
         return response.json().get('user', {})
     else:
         return {}
+    
 # Fetch the info of the user’s friends, ensuring each friend is unique
 def fetch_friends_info(username, seen_users, limit=200):
     friends_data = []
@@ -28,7 +30,7 @@ def fetch_friends_info(username, seen_users, limit=200):
                 friend_name = friend.get('name')
                 real_name = friend.get('realname')
                 country = friend.get('country')
-                if None in (friend_name, real_name, country) or country == "None":
+                if None in (friend_name, real_name, country) or country == "None":  # Eliminate None value entries
                     continue
                 elif friend_name not in seen_users:
                     friends_data.append({
@@ -44,11 +46,22 @@ def fetch_friends_info(username, seen_users, limit=200):
         else:
             break
     return friends_data
+
+''' 
+    This first part of the program pulls the user's and friends':
+        - Username
+        - Real Name
+        - Country
+
+    The data is written into user_info.csv, filled with 7000 unique users.
+'''
+
 # Initialize variables
 initial_username = 'RJ'  # Initial user to start fetching data
 user_data = []
 seen_users = set()
-num_users = 6000  # Change this value to modify the number of users fetched
+num_users = 7000  # Change this value to modify the number of users fetched
+
 # Fetch initial user’s info
 initial_user_info = get_user_info(initial_username)
 if initial_user_info:
@@ -60,20 +73,28 @@ if initial_user_info:
     if user_info['name'] not in seen_users:
         user_data.append(user_info)
         seen_users.add(user_info['name'])
+
 # Fetch friends of the initial user
 friends_data = fetch_friends_info(initial_username, seen_users, limit=200)
 user_data.extend(friends_data)
+
 # If less than 5000 users, fetch friends of friends
 while len(user_data) < num_users and friends_data:
     random_friend = random.choice(friends_data)
     friends_data = fetch_friends_info(random_friend['name'], seen_users, limit=(num_users - len(user_data)))
     user_data.extend(friends_data)
-# Ensure we have exactly 5000 unique users
+
+# Ensure we have exactly n unique users
 final_user_data = user_data[:num_users]
 # Save user data to CSV
 df_user = pd.DataFrame(final_user_data)
-df_user.to_csv('user_info.csv', index=False)
+df_user.to_csv('user_info.csv', index=False)    # Convert the data frame with user info into a csv called user_info.csv
 print(f"Found {len(df_user)} unique users.")
+
+'''
+    This section of the code uses the entries from 'user_info.csv' to append each users' "Loved Tracks"
+    to each respective entry. Then this new data is written into a csv called "user.csv"
+'''
 # Fetch and process loved tracks for each user
 indices_to_drop = []
 for i in range(len(df_user)):
@@ -109,7 +130,9 @@ for i in range(len(df_user)):
         # If error fetching loved tracks, mark for deletion
         print(f"Error fetching loved tracks for user {username}. Deleting row.")
         indices_to_drop.append(i)
+
 # Drop rows marked for deletion
 df_user = df_user.drop(indices_to_drop).reset_index(drop=True)
+
 # Save updated user data to CSV
 df_user.to_csv('user.csv', index=False)
