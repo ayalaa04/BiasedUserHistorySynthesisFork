@@ -1,17 +1,23 @@
+'''
+    This program filters the item dataset of "apple_music_dataset.csv".
+    It keeps the artistName, trackName, and tag columns.
+    The final clean dataset is written to item.csv
+'''
 import pandas as pd
 import requests
+
 API_KEY = '5fae7208288b136b5a2306d078847c4f'
-SHARED_SECRET = '00e92aefc3ae823055da97f8865b6e6f'
-APPLICATION_NAME = 'RecSetters'
-REGISTERED_TO = 'noahtekle98'
+
 df = pd.read_csv("apple_music_dataset.csv")
 print(df.columns)
 specific_columns = ['artistName','trackName']
+
 # Filter rows where trackName is not 'Music'
 df_apple_music=df[specific_columns]
 df_apple_music = df_apple_music[df_apple_music['trackName'] != 'Music']
 df_apple_music = df_apple_music.reset_index(drop=True)
 print(df_apple_music)
+
 # Initialize an empty list to store tags
 song_tags = []
 # Iterate over the first 100 rows (adjust range(len(df_apple_music)) as needed)
@@ -40,9 +46,11 @@ for i in range(len(df_apple_music)):
     else:
         # Append None if API call fails
         song_tags.append(None)
+
 # Add tags to df_apple_music
 df_apple_music['tags'] = song_tags
 df_apple_music = df_apple_music[pd.notnull(song_tags)]
 df_apple_music = df_apple_music.reset_index(drop=True)
+
 # Save to CSV
 df_apple_music.to_csv('items.csv', index=False)
