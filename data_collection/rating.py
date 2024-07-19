@@ -1,15 +1,18 @@
+'''
+    This program defines the interactions of the users to each item.
+    The interactions are defined as each user's liked songs.
+    With this final dataset filtering program, we now have the basic data of 
+    the two-tower model.
+'''
 import pandas as pd
 
-
+# Read both csvs
 df_user = pd.read_csv('user.csv')
 df_apple_music = pd.read_csv('items.csv')
 
-
+# Assign an id to the music and user dataframes
 df_apple_music['id'] = range(1, len(df_apple_music) + 1)
-
-
 df_user['id'] = range(1, len(df_user) + 1)
-
 
 id_to_trackname = pd.Series(df_apple_music['trackName'].values, index=df_apple_music['id']).to_dict()
 
@@ -18,10 +21,11 @@ id_lst = []
 index_count = {}
 df_lst = []
 
+# For every 
 for i in range(len(df_user)):
     start_marker = "'track_name': '"
     end_marker = "',"
-    loved_tracks_str = df_user.loc[i, 'loved_tracks']
+    loved_tracks_str = df_user.loc[i, 'loved_tracks'] 
     
     track_names = []
     start_pos = 0
@@ -55,6 +59,7 @@ for i in range(len(df_user)):
 df_result = pd.DataFrame(df_lst, columns=['user_id', 'track_id'])
 
 
+# Filter out the low interaction users (users with < 5 interactions)
 while True:
     print(len(df_result))
 

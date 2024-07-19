@@ -4,9 +4,67 @@ import json
 import numpy as np
 import scipy.sparse
 from random import random, shuffle
-from data.datareader import read_bx
 import random
 
+class MusicInteractionGraph:
+    def __init__(self, user_data, item_data, interaction_data) -> None:
+        self.user_data = user_data
+        self.item_data = item_data
+        self.interaction_data = interaction_data
+        self.train_edges, self.validation_edges, self.test_edges = [], [], []
+        self.adj_matrix: scipy.sparse.dok_matrix = None
+
+    def split_statistics(self):
+        training_items = set(self.train_edges[:, 1])
+        validation_items = set(self.validation_edges[:, 1])
+        test_items = set(self.test_edges[:, 1])
+
+        print("Total number of items = {}".format(len(self.item_data)))
+        print("Number of items present across training edges = {}".format(len(training_items)))
+        print("Number of items present across val edges = {}".format(len(validation_items)))
+        print("Number of items present across test edges = {}".format(len(test_items)))
+        print("Average item degree = {}".format(np.mean(self.item_degrees)))
+        print("Average user degree = {}".format(np.mean(self.user_degrees)))
+
+        train_val_common_items = training_items.intersection(validation_items)
+        train_test_common_items = training_items.intersection(test_items)
+
+        print('Number of items common between train and validation edges = {}'.format(len(train_val_common_items)))
+        print('Number of items common between train and test edges = {}'.format(len(train_test_common_items)))
+
+        validation_items = np.array(list(validation_items))
+        test_items = np.array(list(test_items))
+
+        num_cold_items_in_val = np.sum(self.is_cold[validation_items])
+        num_cold_items_in_test = np.sum(self.is_cold[test_items])
+
+        print('Number of cold items in validation set = {}'.format(num_cold_items_in_val))
+        print('Number of cold items in test set = {}'.format(num_cold_items_in_test))
+
+
+    def create_bipartite_graph(self):
+        num_nodes = len(self.user_data) + len(self.item_data) # Num users + num items 
+        self.adj_matrix = scipy.sparse.dok_matrix((num_nodes, num_nodes), dtype=bool)  
+        
+        for edge in self.train_edges:
+            self.adj_matrix[edge[0], edge[1]] = 1
+            self.adj_matrix[edge[1], edge[0]] = 1
+
+        self.adj_matrix = self.adj_matrix.tocsr()
+    
+    def compute_tail_distribution(self, warm_threshold):
+        self.is_cold = np.zeros((self.adj_matrix.shape[0]), dtype=bool)
+        self.start_item_id = len(self.user_data)
+
+        self.user_degrees = np.array(self.adj_matrix[:self.start_item_id].sum(axis=1)).flatten()
+        self.item_degrees = np.array(self.adj_matrix[self.start_item_id:].sum(axis=1)).flatten()
+
+        cold_items = np.argsort(self.item_degrees)[:int((1 - warm_threshold) * len(self.item_degrees))] + self.start_item_id
+        self.is_cold[cold_items] = True
+
+    def create_data_split(self):
+        raise NotImplementedError()
+    
 class InteractionGraph:
     def __init__(self, user_data, item_data, interactions) -> None:
         self.user_data = user_data
